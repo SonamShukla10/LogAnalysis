@@ -34,16 +34,16 @@ count += 1
 
 def top_article_authors() :
 query = """
-SELECT authors.name, COUNT(*) AS num
-FROM authors
-JOIN articles
-ON authors.id = articles.author
-JOIN log
-ON log.path like concat('/article/%', articles.slug)
-GROUP BY authors.name
-GROUP BY num DESC
-LIMIT 3;
-
+   SELECT authors.name, COUNT(*) AS num
+   FROM authors
+   JOIN articles
+   ON authors.id = articles.author
+   JOIN log
+   ON log.path like concat('/article/%', articles.slug)
+   GROUP BY authors.name
+   GROUP BY num DESC
+   LIMIT 3;
+""" 
 ########### RUN QUERY ##########
 results = run(query)
 print('\nTOP THREE AUTHORS BY VIEWS:')
@@ -71,7 +71,7 @@ query = """
           ON total.day = errors.day
           WHERE (ROUND(((errors.error_requests*1.0) / total.requests), 3) >0.01)
           ORDER BY percent DESC;
-          
+       """    
           ####### RIN QUERY ##########
           results = run(query)
           print('\nDAYS WITH MORE THAN 1% ERRORS:')
