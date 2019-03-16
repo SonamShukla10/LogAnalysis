@@ -15,6 +15,6 @@ Data loaded. To do this - cd into your vagrant directory and use the command psq
 Views in database "news" created. Download create_view.sql Two views are needed.
 Run script psql -d news -f create_views.sql
 
-Then, finally run python3 log_analysis.py file.
+Then, finally run python3 logAnalysis.py file.
 If, the error is package psycopg2 does not not exist the firstly install  pip3 install psycopg2 --user
-Then python log_analysis.py
+Then python logAnalysis.py
