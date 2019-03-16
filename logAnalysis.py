@@ -26,7 +26,7 @@ def execute_query(query):
 
 
 
-def get_articles():
+def top_articles():
 
     
     query = ("""
@@ -37,15 +37,15 @@ def get_articles():
         ORDER BY count DESC
         LIMIT 3""")
     
-    pop_articles = execute_query(query)
+    view_articles = run_query(query)
 
     
     print('\nWhat are the most popular three articles of all time?\n')
 
    
-    for title, views in pop_articles:
-        lst = "  " + '"' + title + '"' + " - " + str(views) + " views\n"
-        sys.stdout.write(lst)
+    for title, views in view_articles:
+        list = "  " + '"' + title + '"' + " - " + str(views) + " views\n"
+        sys.stdout.write(list)
 
 
 def get_authors():
@@ -60,13 +60,13 @@ def get_authors():
         ORDER BY count DESC""")
 
     
-    pop_authors = execute_query(query)
+    view_authors = run_query(query)
 
    
     print('\nWho are the most popular article authors of all time?\n')
 
   
-    for name, views in pop_authors:
+    for name, views in view_authors:
         print("  ", name, "-", views, "views")
 
 
@@ -88,7 +88,7 @@ def get_errors():
         WHERE pct_errs > 1.0""")
 
     
-    err_days = execute_query(query)
+    err_days = run_query(query)
 
     
     print("\nOn which days did more than 1% of requests lead to errors?\n")
@@ -102,7 +102,7 @@ def get_errors():
 
 
 if __name__ == '__main__':
-    get_articles()
+    top_articles()
 
     get_authors()
 
