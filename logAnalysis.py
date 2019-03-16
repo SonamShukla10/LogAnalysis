@@ -1,88 +1,111 @@
+#!/usr/bin/env python3
+
 import psycopg2
-DBNAME = "popular"
+import sys
 
-def run(query) :
-db = psycopg2.connect('dbname =' + DBNAME)
-c = db.cursor()
-c.execute(query)
-rows = c.fetchall()
-db.close()
-return rows
-
-def top_articles() :
-query = """
-SELCET articles.title, COUNT(*) AS num FROM articles
-JOIN log
-ON log.path LIKE concat('/article/%', articles.slug)
-GROUP BY articles.title
-ORDER BY articles.title
-ORDER BY num DESC
-LIMIT 3;
-"""
-
-### RUN QUERY #######33
-results = run(query)
-print('\nTOP THREE ARTICLES BY PAGE VIEWS : ')
-count = 1
-for i in results
-number = '(' + str(count) + ') "'
-title = i[0]
-views = '" with ' + str(i[1]) + "views"
-print(number + title + views)
-count += 1
+DBNAME = "news"
 
 
-def top_article_authors() :
-query = """
-   SELECT authors.name, COUNT(*) AS num
-   FROM authors
-   JOIN articles
-   ON authors.id = articles.author
-   JOIN log
-   ON log.path like concat('/article/%', articles.slug)
-   GROUP BY authors.name
-   GROUP BY num DESC
-   LIMIT 3;
-""" 
-########### RUN QUERY ##########
-results = run(query)
-print('\nTOP THREE AUTHORS BY VIEWS:')
-count = 1
-for i in results :
-print('(' + str(count) + ') ' + i[0] + ' with ' + str(i[1]) + " views")
-count += 1
+def execute_query(query):
+    try:
+        
+        db = psycopg2.connect(database=DBNAME)
+       
+        c = db.cursor()
+        
+        c.execute(query)
+        
+        results = c.fetchall()
+       
+        db.close()
+       
+        return (results)
+
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
 
 
-def days_with_errors() :
-query = """
-    SELECT total.day,
-    ROUND(((errors.error_requests*1.0) / total.requests), 3) AS percent
-    FROM (
-       SELECT date_trunc('day', time) "day", count(*) AS errror_requests
-       FROM log
-       WHERE status LIKE '404%'
-       GROUP BY day
-       ) AS errors
-       JOIN (
-          SELECT date_trunc('day', timw) "day", count(*) AS requests
-          FROM log
-          GROUP BY day
-          ) AS total
-          ON total.day = errors.day
-          WHERE (ROUND(((errors.error_requests*1.0) / total.requests), 3) >0.01)
-          ORDER BY percent DESC;
-       """    
-          ####### RIN QUERY ##########
-          results = run(query)
-          print('\nDAYS WITH MORE THAN 1% ERRORS:')
-          for i in results :
-          date = i[0].strftime('%B %d, %Y')
-          errors = str(round(i[1]*100, 1)) + "%" + " errors"
-          print(date + " __ " + errors)
-          
-     print('Calculating Results........\n)
-     top_articles()
-     top_article_authors()
-     days_with_errors()
+
+def get_articles():
+
+    
+    query = ("""
+        SELECT title, count(title)
+        FROM log, articles
+        WHERE '/article/' || articles.slug = log.path
+        GROUP BY title
+        ORDER BY count DESC
+        LIMIT 3""")
+    
+    pop_articles = execute_query(query)
+
+    
+    print('\nWhat are the most popular three articles of all time?\n')
+
+   
+    for title, views in pop_articles:
+        lst = "  " + '"' + title + '"' + " - " + str(views) + " views\n"
+        sys.stdout.write(lst)
+
+
+def get_authors():
+
+   
+    query = ("""
+        SELECT name, count(title)
+        FROM log, articles, authors
+        WHERE '/article/' || articles.slug = log.path
+        AND authors.id = articles.author
+        GROUP BY authors.name
+        ORDER BY count DESC""")
+
+    
+    pop_authors = execute_query(query)
+
+   
+    print('\nWho are the most popular article authors of all time?\n')
+
+  
+    for name, views in pop_authors:
+        print("  ", name, "-", views, "views")
+
+
+
+def get_errors():
+
+    # SQL to retrieve error codes more than 1% (from 2 diff views)
+    query = ("""
+        WITH t AS (
+            SELECT tot_reqs.date,
+                   round((tot_err::numeric / totals::numeric) * 100, 2)
+                    AS pct_errs
+            FROM err_reqs, tot_reqs
+            WHERE err_reqs.date = tot_reqs.date
+            )
+        SELECT to_char(date, 'TMMonth DD"," YYYY'),
+               pct_errs
+        FROM t
+        WHERE pct_errs > 1.0""")
+
+    
+    err_days = execute_query(query)
+
+    
+    print("\nOn which days did more than 1% of requests lead to errors?\n")
+
+   
+    for date, pct_errs in err_days:
+        bad_status = "  " + date + " - " + str(pct_errs) + "% errors\n"
+        sys.stdout.write(bad_status)
+        print('\n')
+
+
+
+if __name__ == '__main__':
+    get_articles()
+
+    get_authors()
+
+    get_errors()
           
          
