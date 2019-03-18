@@ -7,7 +7,7 @@
 3.On which days did more than 1% of requests lead to errors?
 
 Prerequisites==>
----------------
+----------------
 * Python 3.6.2 installed. To download - go to https://www.python.org.
 * PostgreSQL.
 * Virtual machine (if using) configured. https://www.virtualbox.org.
