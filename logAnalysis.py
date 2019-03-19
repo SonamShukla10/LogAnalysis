@@ -36,7 +36,7 @@ def top_articles():
         sys.stdout.write(list)
 
 
-def get_authors():   
+def top_authors():   
     query = ("""
         SELECT name, count(title)
         FROM log, articles, authors
@@ -53,7 +53,7 @@ def get_authors():
 def get_errors():
 
     query = ("""
-        WITH t AS (
+        WITH s AS (
             SELECT total_reqs.date,
                    round((total_err::numeric / totals::numeric) * 100, 2)
                     AS pct_errs
@@ -62,7 +62,7 @@ def get_errors():
             )
         SELECT to_char(date, 'TMMonth DD"," YYYY'),
                pct_errs
-        FROM t
+        FROM s
         WHERE pct_errs > 1.0""")
     err_days = run_query(query)
     print("\nOn which days did more than 1% of requests lead to errors?\n")
@@ -74,7 +74,7 @@ def get_errors():
         
 if __name__ == '__main__':
     top_articles()
-    get_authors()
+    top_authors()
     get_errors()
     
           
