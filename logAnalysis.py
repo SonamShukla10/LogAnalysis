@@ -9,13 +9,9 @@ DBNAME = "news"
 def run_query(query):
     try:
         db = psycopg2.connect(database=DBNAME)
-        # connection cursor
         c = db.cursor()
-        # executr query
         c.execute(query)
-        # fetch all data
-        results = c.fetchall()
-        # close the connection
+        results = c.fetchall
         db.close()
        
         return (results)
