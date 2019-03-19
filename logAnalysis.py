@@ -6,12 +6,16 @@ import sys
 DBNAME = "news"
 
 
-def execute_query(query):
+def run_query(query):
     try:
         db = psycopg2.connect(database=DBNAME)
-        c = db.cursor()        
+        # connection cursor
+        c = db.cursor()
+        # executr query
         c.execute(query)
+        # fetch all data
         results = c.fetchall()
+        # close the connection
         db.close()
        
         return (results)
@@ -72,6 +76,7 @@ def get_errors():
         sys.stdout.write(bad_status)
         print('\n')
 
+        
 if __name__ == '__main__':
     top_articles()
     get_authors()
