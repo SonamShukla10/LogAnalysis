@@ -52,14 +52,13 @@ def get_authors():
         
 def get_errors():
 
-    # SQL to retrieve error codes more than 1% (from 2 diff views)
     query = ("""
         WITH t AS (
-            SELECT tot_reqs.date,
-                   round((tot_err::numeric / totals::numeric) * 100, 2)
+            SELECT total_reqs.date,
+                   round((total_err::numeric / totals::numeric) * 100, 2)
                     AS pct_errs
-            FROM err_reqs, tot_reqs
-            WHERE err_reqs.date = tot_reqs.date
+            FROM err_reqs, total_reqs
+            WHERE err_reqs.date = total_reqs.date
             )
         SELECT to_char(date, 'TMMonth DD"," YYYY'),
                pct_errs
