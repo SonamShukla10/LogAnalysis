@@ -13,7 +13,7 @@ Prerequisites==>
 * Virtual machine (if using) configured. https://www.virtualbox.org.
 * Data downloaded. To download - go to newsdata. After downloading, unzip the file and place it in the vagrant directory - or whatever file is shared with your virtual machine.
 * Data loaded. To do this - cd into your vagrant directory and use the command psql -d news -f newsdata.sql .
-* Views in database "news" created. Attach create_view.sql . Two views are needed.
+* Views in database "news" created. Attach createViews.sql . Two views are needed.
 * Run script psql -d news -f create_views.sql .
 * Then, finally run python3 logAnalysis.py file .
 * If, the error is package psycopg2 does not not exist the firstly install  pip3 install psycopg2 --user (on command line).
