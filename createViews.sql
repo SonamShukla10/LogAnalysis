@@ -1,16 +1,19 @@
 -- Create views in 'news' postgreSQL db for use with
 -- logs_analysis.py 
 
-CREATE VIEW err_reqs AS 
-SELECT time::date AS date, count(*) AS total_err
-FROM log
-WHERE status <> '200 OK'
-GROUP BY date
-ORDER BY date ASC;
+CREATE VIEW logstar AS
+SELECT count(*) as stat, 
+status, cast(time as date) as day
+FROM log WHERE status like '%404%'
+GROUP BY status, day
+ORDER BY stat desc limit 3;
 
-
-CREATE VIEW total_reqs AS 
-SELECT time::date AS date, count(*) AS totals
+CREATE VIEW totalvisitors AS
+SELECT count(*) as visitors,
+cast(time as date) as errortime
 FROM log
-GROUP BY date
-ORDER BY date ASC;
+GROUP BY errortime;
+
+CREATE VIEW errorcount AS
+SELECT * from logstar join totalvisitors
+ON logstar.day = totalvisitors.errortime;
