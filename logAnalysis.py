@@ -37,9 +37,9 @@ def get_query(query):
     db.close()
     return result
 	
-value1 = get_query(q1)
-value2 = get_query(q2)
-value3 = get_query(q3)
+result1 = get_query(q1)
+result2 = get_query(q2)
+result3 = get_query(q3)
 
 def print_result(list):
     for i in range(len(list)):
