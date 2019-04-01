@@ -1,81 +1,57 @@
-#!/usr/bin/env python3
+# !/usr/bin/env python
 
 import psycopg2
 import sys
-
 DBNAME = "news"
 
+value1 = "What are the most popular articles ?"
 
-def run_query(query):
-    try:
-        db = psycopg2.connect(database=DBNAME)
-        c = db.cursor()
-        c.execute(query)
-        results = c.fetchall
-        db.close()
-       
-        return (results)
-    except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
-        
-        
-def top_articles():
+q1 = ("SELECT title, count(*) as views FROM articles \n"
+           "  JOIN log\n"
+           "    ON articles.slug = substring(log.path, 10)\n"
+           "    GROUP BY title ORDER BY views DESC LIMIT 3;")
+		  
+value2 = "Who are the most popular article authors ?"
 
-    query = ("""
-        SELECT title, count(title)
-        FROM log, articles
-        WHERE '/article/' || articles.slug = log.path
-        GROUP BY title
-        ORDER BY count DESC
-        LIMIT 3""")
-    
-    view_articles = run_query(query)
-    print('\nWhat are the most popular three articles of all time?\n')   
-    for title, views in view_articles:
-        list = "  " + '"' + title + '"' + " - " + str(views) + " views\n"
-        sys.stdout.write(list)
+q2 = ("SELECT authors.name, count(*) as views\n"
+           "    FROM articles \n"
+           "    JOIN authors\n"
+           "      ON articles.author = authors.id \n"
+           "      JOIN log \n"
+           "      ON articles.slug = substring(log.path, 10)\n"
+           "      WHERE log.status LIKE '200 OK'\n"
+           "      GROUP BY authors.name ORDER BY views DESC;")
+		   
+		   
+value2 =  "On which days more than 1% of the requests led to error?"
 
+q3 = ("SELECT round((stat*100.0)/visitors, 3) as\n"
+           "        result, to_char(errortime, 'Mon DD, YYYY')\n"
+           "        FROM errorcount ORDER BY result desc limit 1;")
 
-def top_authors():   
-    query = ("""
-        SELECT name, count(title)
-        FROM log, articles, authors
-        WHERE '/article/' || articles.slug = log.path
-        AND authors.id = articles.author
-        GROUP BY authors.name
-        ORDER BY count DESC""")
-    view_authors = run_query(query)
-    print('\nWho are the most popular article authors of all time?\n')
-    for name, views in view_authors:
-        print("  ", name, "-", views, "views")
-        
-        
-def get_errors():
+def get_query(query):
+    db = psycopg2.connect(database=DBNAME)
+    c = db.cursor()
+    c.execute(sql_query)
+    result = c.fetchall()
+    db.close()
+    return result
+	
+result1 = get_query(query_1)
+result2 = get_query(query_2)
+result3 = get_query(query_3)
 
-    query = ("""
-        WITH s AS (
-            SELECT total_reqs.date,
-                   round((total_err::numeric / totals::numeric) * 100, 2)
-                    AS pct_errs
-            FROM err_reqs, total_reqs
-            WHERE err_reqs.date = total_reqs.date
-            )
-        SELECT to_char(date, 'TMMonth DD"," YYYY'),
-               pct_errs
-        FROM s
-        WHERE pct_errs > 1.0""")
-    err_days = run_query(query)
-    print("\nOn which days did more than 1% of requests lead to errors?\n")
-    for date, pct_errs in err_days:
-        bad_status = "  " + date + " - " + str(pct_errs) + "% errors\n"
-        sys.stdout.write(bad_status)
-        print('\n')
-
-        
-if __name__ == '__main__':
-    top_articles()
-    top_authors()
-    get_errors()
-    
-          
-         
+def print_result(list):
+    for i in range(len(list)):
+        title = list[i][0]
+        rest = list[i][1]
+        print("\t" + "%s - %d" % (title, rest) + " views")
+    print("\n")
+	
+print(value1)
+print_result(result1)
+print(value2)
+print_result(result2)
+print(value3)
+print("\t" + result3[0][1] + " - " + str(result3[0][0]) + "%")
+	
