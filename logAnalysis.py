@@ -7,11 +7,11 @@ DBNAME = "news"
 
 def run(output):
     db = psycopg2.connect(database=DBNAME)
-	c = db.cursor()
-	c.execute(query)
-	results = c.fetchall()
-	db.close()
-	return(results)
+    c = db.cursor()
+    c.execute(query)
+    results = c.fetchall()
+    db.close()
+    return(results)
 	
 def get_articles():
     output = ("""select articles.title, count(*)
@@ -59,7 +59,7 @@ def get_errors():
               GROUP BY t1.time::date,t2.total; """)
 			
 			# execute
-		result_error = run(output)	
+	result_error = run(output)	
 		
 		print("\nOn which days did more than 1% of requests lead to errors?\n")
 		 
