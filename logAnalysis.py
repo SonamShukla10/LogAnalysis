@@ -1,57 +1,76 @@
-# !/usr/bin/env python
+#!/usr/bin/env python3
 
 import psycopg2
 import sys
+
 DBNAME = "news"
 
-value1 = "What are the most popular articles ?"
-
-q1 = ("SELECT title, count(*) as views FROM articles \n"
-           "  JOIN log\n"
-           "    ON articles.slug = substring(log.path, 10)\n"
-           "    GROUP BY title ORDER BY views DESC LIMIT 3;")
-		  
-value2 = "Who are the most popular article authors ?"
-
-q2 = ("SELECT authors.name, count(*) as views\n"
-           "    FROM articles \n"
-           "    JOIN authors\n"
-           "      ON articles.author = authors.id \n"
-           "      JOIN log \n"
-           "      ON articles.slug = substring(log.path, 10)\n"
-           "      WHERE log.status LIKE '200 OK'\n"
-           "      GROUP BY authors.name ORDER BY views DESC;")
-		   
-		   
-value2 =  "On which days more than 1% of the requests led to error?"
-
-q3 = ("SELECT round((stat*100.0)/visitors, 3) as\n"
-           "        result, to_char(errortime, 'Mon DD, YYYY')\n"
-           "        FROM errorcount ORDER BY result desc limit 1;")
-
-def get_query(query):
+def run(output):
     db = psycopg2.connect(database=DBNAME)
-    c = db.cursor()
-    c.execute(sql_query)
-    result = c.fetchall()
-    db.close()
-    return result
+	c = db.cursor()
+	c.execute(query)
+	results = c.fetchall()
+	db.close()
+	return(results)
 	
-result1 = get_query(q1)
-result2 = get_query(q2)
-result3 = get_query(q3)
+def get_articles():
+    output = ("""select articles.title, count(*)
+            from articles, JOIN log
+            on substring(log.path,10,100) = articles.slug
+            and log.status = '200 OK'
+            group by articles.title 
+			ORDER BY count DESC LIMIT 3; """)
+			
+			# EXECUTE 
+	fetch_articles =  run(output)
+	
+	print('\n What are the most popular articles of all time?')
+	
+	for title, views in fetch_articles:
+	    print("  "title + " - " + str(views) + "views\n")
+		
 
-def print_result(list):
-    for i in range(len(list)):
-        title = list[i][0]
-        rest = list[i][1]
-        print("\t" + "%s - %d" % (title, rest) + " views")
-    print("\n")
+def get_authors():
+    output = (""" "SELECT name, count(*) as num FROM authors" +
+              "INNER JOIN articles ON (authors.id = articles.author) " +
+              "JOIN log ON (REPLACE(log.path, '/article/', '')=articles.slug) " +
+              AND authors.id = articles.authors
+            GROUP BY authors.name
+            ORDER BY count DESC
+			limit 3; """)
+
+   # execute
+    fetch_authors = run(output)
 	
-print(value1)
-print_result(result1)
-print(value2)
-print_result(result2)
-print(value3)
-print("\t" + result3[0][1] + " - " + str(result3[0][0]) + "%")
+	print('\nWho are the most popular article authors of all time?\n')
+	for name, views in fetch_authors:
+	    print("  ", name, "-", views, "views")
+
+
+def get_errors():
+    output = (""" SELECT count(t1.status)*100.0/t2.total as percentage,t1.time::date
+              FROM log AS t1
+              JOIN (
+              SELECT count(status) AS total,time::date
+              FROM log
+              GROUP BY time::date
+              ) AS t2
+              ON t1.time::date = t2.time::date where t1.status not like '%200%'
+              GROUP BY t1.time::date,t2.total; """)
+			
+			# execute
+		result_error = run(output)	
+		
+		print("\nOn which days did more than 1% of requests lead to errors?\n")
+		 
+		for errordate, errorto, http_request, in result_error:
+		    print("    {:%B %d, %Y}  --  {:.2f}% errors".format(errdate, errorto))
+			print('\n')
+			
+if __name__ == '__main__':
+    get_articles()  
+    
+	get_authors()
 	
+	get_errors()		
+			
