@@ -18,7 +18,7 @@ def get_articles():
 		group by articles.title
 		ORDER BY count Desc LIMIT 3; """)
 
-fetch_articles =  run(output)
+fetch_articles = run(output)
 print('\n What are the most popular articles of all time?')
 for title, views in fetch_articles:
 	print("  ""title" + " - " + str(views) + "views\n")
